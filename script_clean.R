@@ -15,6 +15,8 @@ library(fastai)
 library(highcharter)
 library(janitor)
 
+
+#### RMD ####
 # visualise occupancy data
 # hack of the unmarked package plot function
 plot_unmarked <- function(data) {
@@ -315,11 +317,26 @@ dat_ain_dl <- list(deer = dat_chevreuil,
                    fox = dat_renard)
 
 
+#####
 
 
 
 
-## WORKFLOW
+
+#### INSTALLING RETICUALTE, ETC ####
+
+#install.packages("reticulate")
+library(reticulate)
+repl_python()
+
+
+
+
+
+#####
+
+
+#### WORKFLOW ####
 
 library(exifr)
 pix_folder <- 'pix/pixJura/'
@@ -396,7 +413,7 @@ bind_rows("training" = pix_train, "validation" = pix_valid, .id = "dataset") %>%
 
 
 dls <- ImageDataLoaders_from_folder(
-  path = "pix/test/",
+  path = "pix",
   train = "train",
   valid = "valid",
   item_tfms = Resize(size = 460),
@@ -432,18 +449,20 @@ fls <- list.files(path = "pix/pixAin",
 
 
 predicted <- character(3)
-categories <- interp$vocab %>%
+categories <- as.character(interp$vocab) %>%
   str_replace_all("[[:punct:]]", " ") %>%
   str_trim() %>%
   str_split("   ") %>%
   unlist()
+
 for (i in 1:length(fls)){
   result <- learn %>% predict(fls[i]) # make prediction
-  result[[3]] %>%
+  as.character(result[[3]]) %>%
     str_extract("\\d+") %>%
     as.integer() -> index # extract relevant info
   predicted[i] <- categories[index + 1] # match it with categories
 }
+
 data.frame(truth = c("lynx", "roe deer", "wild boar"),
            prediction = predicted) %>%
   kable(caption = "Comparison of the predictions vs. ground truth.") %>%
@@ -451,3 +470,7 @@ data.frame(truth = c("lynx", "roe deer", "wild boar"),
 
 
 sessionInfo()
+
+
+
+###################
